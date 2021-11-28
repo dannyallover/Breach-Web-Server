@@ -1,6 +1,6 @@
 # Breach Web Server
 
-See the [design](design.pdf) doc which maps out each exploit.
+Capture the flag exercise for breaching a web server. See the [design](design.pdf) doc which maps out each exploit.
 
 Overalls the attacks involve:
 <br>
