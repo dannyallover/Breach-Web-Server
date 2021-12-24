@@ -10,4 +10,4 @@ Overalls the attacks involve:
 <br>
 (3) **reflected XSS attack** (which can be defended by **content security policy**).
 
-See [CS 161](https://fa20.cs161.org/) at UC Berkeley.
+note: this is the 3rd project of [CS 161](https://fa20.cs161.org/) at UC Berkeley.
